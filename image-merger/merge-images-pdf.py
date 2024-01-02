@@ -74,8 +74,6 @@ def generate_combinations(layers, filenames, output_dir):
     if not os.path.exists(output_dir):
         os.makedirs(output_dir)
 
-    target_width, target_height = inches_to_pixels(2.5867, 3.6214)
-
     layer_lengths = [len(layer) for layer in layers]
     total_combinations = functools.reduce(lambda x, y: x * y, layer_lengths)
     print("\nCalculating total combinations...")
@@ -91,9 +89,17 @@ def generate_combinations(layers, filenames, output_dir):
             )
         ]
         
-        # Create a new PDF to hold the combined result
+        first_layer = combination[0]
+        if isinstance(first_layer, Image.Image):
+            # If the first layer is an image, use its dimensions for the PDF
+            pdf_width, pdf_height = first_layer.width, first_layer.height
+        else:
+            # If the first layer is a PDF, open it to get its dimensions
+            with fitz.open(first_layer) as first_pdf:
+                pdf_width, pdf_height = first_pdf[0].rect.width, first_pdf[0].rect.height
+
         new_pdf = fitz.open()
-        pdf_page = new_pdf.new_page(pno=0, width=target_width, height=target_height)
+        pdf_page = new_pdf.new_page(pno=0, width=pdf_width, height=pdf_height)
 
         for img in combination:
             if isinstance(img, str) and img.lower().endswith('.pdf'):
@@ -102,18 +108,50 @@ def generate_combinations(layers, filenames, output_dir):
                 for page in overlay_pdf:
                     pdf_page.show_pdf_page(pdf_page.rect, overlay_pdf, page.number)
             else:
-                # Handle raster images
+                # Handle PNG images (without resizing)
                 img_bytes_io = io.BytesIO()
-                img_resized = img.resize((target_width, target_height), Image.ANTIALIAS)
-                img_resized.save(img_bytes_io, format='PNG')
+                img.save(img_bytes_io, format='PNG')
                 img_bytes_io.seek(0)
                 pdf_page.insert_image(pdf_page.rect, stream=img_bytes_io.read())
 
         output_filename = "_".join(combined_filenames) + f"_{count}.pdf"
-        new_pdf.save(os.path.join(output_dir, output_filename))
+        new_pdf.save(os.path.join(output_dir, output_filename), garbage=4, deflate=True)
         new_pdf.close()
         print(f"Generating file {count} of {total_combinations}: {output_filename}")
         count += 1
+
+def merge_layers(layer1, filenames1, layer2, filenames2, output_dir):
+    """ Merge two layers of images or PDFs in a 1-for-1 fashion with concatenated filenames. """
+    for i, (item1, item2) in enumerate(zip(layer1, layer2)):
+        output_filename = f"{os.path.splitext(filenames1[i])[0]}_-_{os.path.splitext(filenames2[i])[0]}.pdf"
+        new_pdf = fitz.open()
+
+        # Check if the first item is a PDF or an image
+        if isinstance(item1, str) and item1.lower().endswith('.pdf'):
+            # Merge PDF with the second item
+            with fitz.open(item1) as pdf1:
+                pdf_page = new_pdf.new_page(pno=0, width=pdf1[0].rect.width, height=pdf1[0].rect.height)
+                pdf_page.show_pdf_page(pdf_page.rect, pdf1, 0)
+                if isinstance(item2, Image.Image):
+                    img_bytes_io = io.BytesIO()
+                    item2.save(img_bytes_io, format='PNG')
+                    img_bytes_io.seek(0)
+                    pdf_page.insert_image(pdf_page.rect, stream=img_bytes_io.read())
+        else:
+            # Merge image with the second item
+            img_bytes_io = io.BytesIO()
+            item1.save(img_bytes_io, format='PNG')
+            img_bytes_io.seek(0)
+            pdf_page = new_pdf.new_page(pno=0, width=item1.width, height=item1.height)
+            pdf_page.insert_image(pdf_page.rect, stream=img_bytes_io.read())
+            if isinstance(item2, str) and item2.lower().endswith('.pdf'):
+                with fitz.open(item2) as pdf2:
+                    pdf_page.show_pdf_page(pdf_page.rect, pdf2, 0)
+
+        new_pdf.save(os.path.join(output_dir, output_filename), garbage=4, deflate=True)
+        new_pdf.close()
+        print(f'Merged file {i + 1} saved as {output_filename}.')
+
 
 # Main execution part
 numLayers = input("Enter the number of layers: ")
@@ -131,8 +169,7 @@ for i, path in enumerate(layerPaths):
 
 merge_method = input("Enter 'MERGE' for a 1-for-1 merge of corresponding images or 'COMBINE' to generate all combinations: ").lower()
 if merge_method == 'merge' and len(layersPath) == 2 and len(layersPath[0]) == len(layersPath[1]):
-    # Code for merging layers (not included in this update as it requires separate handling)
-    print("DUh doy idk what to do here")
+    merge_layers(layersPath[0], all_filenames[0], layersPath[1], all_filenames[1], outputInput)
 elif merge_method == 'combine':
     generate_combinations(layersPath, all_filenames, outputInput)
 else:
