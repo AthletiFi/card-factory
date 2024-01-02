@@ -39,26 +39,24 @@ from reportlab.pdfgen import canvas
 from reportlab.lib.units import inch
 from svglib.svglib import svg2rlg
 from reportlab.graphics import renderPDF
-from reportlab.graphics.shapes import Drawing
+from io import BytesIO
+from reportlab.lib.utils import ImageReader
 
-# Function to normalize player names for consistency
 def normalize_name(name):
-    """ Convert names to lowercase and replace spaces with hyphens. Remove trailing hyphens. """
+    """ Normalize the player name to ensure consistent formatting. """
     name = name.lower().replace(" ", "-")
     name = re.sub(r"[-]+?$", "", name)  # Remove trailing hyphens
     return name
 
-# Function to extract player information from the filename
 def extract_player_info(filename):
-    """ Extract the player's name and pose from the filename. """
+    """ Extract player name and pose from the filename. """
     parts = filename.split('-')
     player_name = parts[0]
-    pose = '-'.join(parts[2:])[:-4]  # Extract pose and remove file extension
+    pose = '-'.join(parts[2:])[:-4]  # Remove '.png' from the pose
     return player_name, pose
 
-# Function to load player photos from a directory
 def load_player_photos(directory):
-    """ Load all player photos from the specified directory and organize them by player name. """
+    """ Load player photos from the specified directory. """
     player_photos = {}
     for filename in os.listdir(directory):
         if filename.endswith(".png") and '-' in filename:
@@ -70,9 +68,8 @@ def load_player_photos(directory):
     print(f"Loaded {len(player_photos)} players' photos.")
     return player_photos
 
-# Function to load SVG text layers from a directory
 def load_text_layers_svg(directory):
-    """ Load SVG text layers, organizing them by player name. """
+    """ Load SVG text layers from the specified directory. """
     text_layers = {}
     for filename in os.listdir(directory):
         if filename.startswith("text layer-") and filename.endswith(".svg"):
@@ -82,12 +79,17 @@ def load_text_layers_svg(directory):
     print(f"Loaded text layers for {len(text_layers)} players.")
     return text_layers
 
-# Function to sanitize file paths
 def sanitize_path(input_path):
-    """ Clean the file path, removing backslashes and trailing spaces. """
-    return input_path.replace("\\", "").strip()
+    """ Sanitize the file path by removing single quotes, backslashes, and stripping trailing spaces. """
+    return input_path.replace("'", "").replace("\\", "").strip()
 
-# User inputs for directories
+def pil_image_to_reportlab(image):
+    """ Convert PIL Image to a format compatible with ReportLab, preserving transparency. """
+    image_buffer = BytesIO()
+    image.save(image_buffer, format='PNG')
+    return image_buffer
+
+# User input for directories, with path sanitization
 player_photos_dir = sanitize_path(input("Enter the file directory for the PLAYER photos: "))
 text_layers_dir = sanitize_path(input("Enter the file directory for the TEXT layers: "))
 output_dir = sanitize_path(input("Enter the directory where you want the images to output: "))
@@ -100,17 +102,9 @@ text_layers = load_text_layers_svg(text_layers_dir)
 if not os.path.exists(output_dir):
     os.makedirs(output_dir)
 
-# Set the desired dimensions for the output PDF
-pdf_width = 2.5867 * inch  # PDF width in inches
-pdf_height = 3.62138 * inch  # PDF height in inches
-
-# SVG artboard dimensions as provided from Illustrator (or other source)
-svg_width_in = 20.1111  # Artboard width in inches
-svg_height_in = 20.1111  # Artboard height in inches
-
-# Calculate scaling factors to resize the SVG to fit the PDF dimensions
-scale_x = pdf_width / svg_width_in  # Horizontal scaling factor
-scale_y = pdf_height / svg_height_in  # Vertical scaling factor
+# Set the PDF dimensions to the desired size
+pdf_width = 2.5867 * inch  # in inches
+pdf_height = 3.62138 * inch  # in inches
 
 count = 0  # Counter for the number of images generated
 for player_name, photos in player_photos.items():
@@ -123,14 +117,13 @@ for player_name, photos in player_photos.items():
             # Create a new canvas for each PDF
             c = canvas.Canvas(output_path, pagesize=(pdf_width, pdf_height))
 
-            # Load and scale the SVG text layer to fit the PDF
+            # Load and draw the SVG text layer directly onto the PDF
             drawing = svg2rlg(svg_text_path)
-            scaled_drawing = Drawing(pdf_width, pdf_height)
-            scaled_drawing.add(drawing, transform=[scale_x, 0, 0, scale_y, 0, 0])
-            renderPDF.draw(scaled_drawing, c, 0, 0)  # Draw the scaled SVG on the PDF
+            renderPDF.draw(drawing, c, 0, 0)  # Draw the SVG on the PDF
 
-            # Overlay the player photo on top of the SVG text layer
-            c.drawInlineImage(photo, 0, 0, width=pdf_width, height=pdf_height)
+            # Convert the PIL image to a format compatible with ReportLab
+            image_stream = pil_image_to_reportlab(photo)
+            c.drawImage(ImageReader(image_stream), 0, 0, width=pdf_width, height=pdf_height)
 
             # Save the PDF
             c.save()
