@@ -89,26 +89,27 @@ def generate_combinations(layers, filenames, output_dir):
             )
         ]
         
+        # Start creating a new PDF document
+        new_pdf = fitz.open()
+        # Determine the size of the new PDF page (use the first layer size)
         first_layer = combination[0]
         if isinstance(first_layer, Image.Image):
-            # If the first layer is an image, use its dimensions for the PDF
             pdf_width, pdf_height = first_layer.width, first_layer.height
         else:
-            # If the first layer is a PDF, open it to get its dimensions
             with fitz.open(first_layer) as first_pdf:
                 pdf_width, pdf_height = first_pdf[0].rect.width, first_pdf[0].rect.height
-
-        new_pdf = fitz.open()
         pdf_page = new_pdf.new_page(pno=0, width=pdf_width, height=pdf_height)
 
         for img in combination:
             if isinstance(img, str) and img.lower().endswith('.pdf'):
                 # Handle PDF files
                 overlay_pdf = fitz.open(img)
-                for page in overlay_pdf:
-                    pdf_page.show_pdf_page(pdf_page.rect, overlay_pdf, page.number)
+                if len(overlay_pdf) > 0 and not overlay_pdf[0].is_blank():
+                    pdf_page.show_pdf_page(pdf_page.rect, overlay_pdf, 0)
+                else:
+                    print(f"Skipping empty or blank PDF: {img}")
             else:
-                # Handle PNG images (without resizing)
+                # Handle PNG images
                 img_bytes_io = io.BytesIO()
                 img.save(img_bytes_io, format='PNG')
                 img_bytes_io.seek(0)
