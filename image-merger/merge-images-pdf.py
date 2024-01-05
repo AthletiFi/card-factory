@@ -89,9 +89,7 @@ def generate_combinations(layers, filenames, output_dir):
             )
         ]
         
-        # Start creating a new PDF document
         new_pdf = fitz.open()
-        # Determine the size of the new PDF page (use the first layer size)
         first_layer = combination[0]
         if isinstance(first_layer, Image.Image):
             pdf_width, pdf_height = first_layer.width, first_layer.height
@@ -102,14 +100,15 @@ def generate_combinations(layers, filenames, output_dir):
 
         for img in combination:
             if isinstance(img, str) and img.lower().endswith('.pdf'):
-                # Handle PDF files
                 overlay_pdf = fitz.open(img)
-                if len(overlay_pdf) > 0 and not overlay_pdf[0].is_blank():
-                    pdf_page.show_pdf_page(pdf_page.rect, overlay_pdf, 0)
-                else:
-                    print(f"Skipping empty or blank PDF: {img}")
+                if len(overlay_pdf) > 0:
+                    page = overlay_pdf[0]
+                    # Check for text or drawings to determine if the page is blank
+                    if page.get_text("text") or page.get_drawings():
+                        pdf_page.show_pdf_page(pdf_page.rect, overlay_pdf, 0)
+                    else:
+                        print(f"Skipping empty or blank PDF: {img}")
             else:
-                # Handle PNG images
                 img_bytes_io = io.BytesIO()
                 img.save(img_bytes_io, format='PNG')
                 img_bytes_io.seek(0)
@@ -123,36 +122,46 @@ def generate_combinations(layers, filenames, output_dir):
 
 def merge_layers(layer1, filenames1, layer2, filenames2, output_dir):
     """ Merge two layers of images or PDFs in a 1-for-1 fashion with concatenated filenames. """
+    if not os.path.exists(output_dir):
+        os.makedirs(output_dir)
+
     for i, (item1, item2) in enumerate(zip(layer1, layer2)):
         output_filename = f"{os.path.splitext(filenames1[i])[0]}_-_{os.path.splitext(filenames2[i])[0]}.pdf"
         new_pdf = fitz.open()
 
-        # Check if the first item is a PDF or an image
+        # Load first layer
         if isinstance(item1, str) and item1.lower().endswith('.pdf'):
-            # Merge PDF with the second item
             with fitz.open(item1) as pdf1:
-                pdf_page = new_pdf.new_page(pno=0, width=pdf1[0].rect.width, height=pdf1[0].rect.height)
-                pdf_page.show_pdf_page(pdf_page.rect, pdf1, 0)
-                if isinstance(item2, Image.Image):
-                    img_bytes_io = io.BytesIO()
-                    item2.save(img_bytes_io, format='PNG')
-                    img_bytes_io.seek(0)
-                    pdf_page.insert_image(pdf_page.rect, stream=img_bytes_io.read())
+                pdf_width, pdf_height = pdf1[0].rect.width, pdf1[0].rect.height
         else:
-            # Merge image with the second item
+            pdf_width, pdf_height = item1.width, item1.height
+
+        # Create new PDF page
+        pdf_page = new_pdf.new_page(pno=0, width=pdf_width, height=pdf_height)
+
+        # Insert first layer
+        if isinstance(item1, Image.Image):
             img_bytes_io = io.BytesIO()
             item1.save(img_bytes_io, format='PNG')
             img_bytes_io.seek(0)
-            pdf_page = new_pdf.new_page(pno=0, width=item1.width, height=item1.height)
             pdf_page.insert_image(pdf_page.rect, stream=img_bytes_io.read())
-            if isinstance(item2, str) and item2.lower().endswith('.pdf'):
-                with fitz.open(item2) as pdf2:
-                    pdf_page.show_pdf_page(pdf_page.rect, pdf2, 0)
+        elif isinstance(item1, str) and item1.lower().endswith('.pdf'):
+            with fitz.open(item1) as pdf1:
+                pdf_page.show_pdf_page(pdf_page.rect, pdf1, 0)
+
+        # Insert second layer
+        if isinstance(item2, Image.Image):
+            img_bytes_io = io.BytesIO()
+            item2.save(img_bytes_io, format='PNG')
+            img_bytes_io.seek(0)
+            pdf_page.insert_image(pdf_page.rect, stream=img_bytes_io.read(), overlay=True)
+        elif isinstance(item2, str) and item2.lower().endswith('.pdf'):
+            with fitz.open(item2) as pdf2:
+                pdf_page.show_pdf_page(pdf_page.rect, pdf2, 0, overlay=True)
 
         new_pdf.save(os.path.join(output_dir, output_filename), garbage=4, deflate=True)
         new_pdf.close()
         print(f'Merged file {i + 1} saved as {output_filename}.')
-
 
 # Main execution part
 numLayers = input("Enter the number of layers: ")
@@ -174,4 +183,4 @@ if merge_method == 'merge' and len(layersPath) == 2 and len(layersPath[0]) == le
 elif merge_method == 'combine':
     generate_combinations(layersPath, all_filenames, outputInput)
 else:
-    print("Sorry, that wasn't an appropriate response. Do better next time")
+    print("Sorry, that didn't work. If you're doing a merge, make sure it's an equal number of files. If you're doing a combine, idk figure it out.")
