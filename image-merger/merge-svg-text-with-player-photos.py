@@ -80,8 +80,20 @@ def load_text_layers_svg(directory):
     return text_layers
 
 def sanitize_path(input_path):
-    """ Sanitize the file path by removing single quotes, backslashes, and stripping trailing spaces. """
-    return input_path.replace("'", "").replace("\\", "").strip()
+    """ Sanitize the file path by handling both paths with escaped spaces and quoted paths. """
+    # First, strip any leading and trailing quotes
+    sanitized = input_path.strip('\'"')
+
+    # Then, replace backslash-space combinations with a space
+    sanitized = sanitized.replace("\\ ", " ").strip()
+
+    print(f"final path = {sanitized}")
+
+    # Check if the path exists
+    if os.path.exists(sanitized):
+        return sanitized
+    else:
+        raise FileNotFoundError(f"Sanitized path is not a valid file or directory: {sanitized}")
 
 def pil_image_to_reportlab(image):
     """ Convert PIL Image to a format compatible with ReportLab, preserving transparency. """

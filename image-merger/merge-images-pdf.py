@@ -6,9 +6,16 @@ import fitz  # PyMuPDF
 import io
 
 def sanitize_path(input_path):
-    """ Sanitize the file path to handle both quoted paths and paths with escaped spaces. """
+    """ Sanitize the file path by handling both paths with escaped spaces and quoted paths. """
+    # First, strip any leading and trailing quotes
     sanitized = input_path.strip('\'"')
-    sanitized = sanitized.replace("\\ ", " ")
+
+    # Then, replace backslash-space combinations with a space
+    sanitized = sanitized.replace("\\ ", " ").strip()
+
+    print(f"final path = {sanitized}")
+
+    # Check if the path exists
     if os.path.exists(sanitized):
         return sanitized
     else:

@@ -5,13 +5,31 @@ import functools
 import fitz  # PyMuPDF
 import io
 
+def inches_to_points(width_in_inches, height_in_inches):
+    """ Convert dimensions in inches to points (1 inch = 72 points). """
+    width_in_points = width_in_inches * 72
+    height_in_points = height_in_inches * 72
+    return width_in_points, height_in_points
+
 DESIRED_WIDTH_INCHES = 2.5867
 DESIRED_HEIGHT_INCHES = 3.6214
+desired_width_pt, desired_height_pt = inches_to_points(DESIRED_WIDTH_INCHES, DESIRED_HEIGHT_INCHES)
+
+def resize_image_to_exact_dimensions(img, target_width, target_height):
+    """ Resize an image to match the exact target dimensions. """
+    return img.resize((int(target_width), int(target_height)), Image.ANTIALIAS)
 
 def sanitize_path(input_path):
-    """ Sanitize the file path to handle both quoted paths and paths with escaped spaces. """
+    """ Sanitize the file path by handling both paths with escaped spaces and quoted paths. """
+    # First, strip any leading and trailing quotes
     sanitized = input_path.strip('\'"')
-    sanitized = sanitized.replace("\\ ", " ")
+
+    # Then, replace backslash-space combinations with a space
+    sanitized = sanitized.replace("\\ ", " ").strip()
+
+    print(f"final path = {sanitized}")
+
+    # Check if the path exists
     if os.path.exists(sanitized):
         return sanitized
     else:
@@ -93,27 +111,21 @@ def generate_combinations(layers, filenames, output_dir):
         ]
         
         new_pdf = fitz.open()
-        first_layer = combination[0]
-        if isinstance(first_layer, Image.Image):
-            pdf_width, pdf_height = first_layer.width, first_layer.height
-        else:
-            with fitz.open(first_layer) as first_pdf:
-                pdf_width, pdf_height = first_pdf[0].rect.width, first_pdf[0].rect.height
-        pdf_page = new_pdf.new_page(pno=0, width=pdf_width, height=pdf_height)
+        pdf_page = new_pdf.new_page(pno=0, width=desired_width_pt, height=desired_height_pt)
 
         for img in combination:
             if isinstance(img, str) and img.lower().endswith('.pdf'):
                 overlay_pdf = fitz.open(img)
                 if len(overlay_pdf) > 0:
                     page = overlay_pdf[0]
-                    # Check for text or drawings to determine if the page is blank
                     if page.get_text("text") or page.get_drawings():
                         pdf_page.show_pdf_page(pdf_page.rect, overlay_pdf, 0)
                     else:
                         print(f"Skipping empty or blank PDF: {img}")
             else:
+                img_resized = resize_image_to_exact_dimensions(img, desired_width_pt, desired_height_pt)
                 img_bytes_io = io.BytesIO()
-                img.save(img_bytes_io, format='PNG')
+                img_resized.save(img_bytes_io, format='PNG')
                 img_bytes_io.seek(0)
                 pdf_page.insert_image(pdf_page.rect, stream=img_bytes_io.read())
 
@@ -132,30 +144,25 @@ def merge_layers(layer1, filenames1, layer2, filenames2, output_dir):
         output_filename = f"{os.path.splitext(filenames1[i])[0]}_-_{os.path.splitext(filenames2[i])[0]}.pdf"
         new_pdf = fitz.open()
 
-        # Load first layer
-        if isinstance(item1, str) and item1.lower().endswith('.pdf'):
-            with fitz.open(item1) as pdf1:
-                pdf_width, pdf_height = pdf1[0].rect.width, pdf1[0].rect.height
-        else:
-            pdf_width, pdf_height = item1.width, item1.height
+        # Create new PDF page with desired dimensions in points
+        pdf_page = new_pdf.new_page(pno=0, width=desired_width_pt, height=desired_height_pt)
 
-        # Create new PDF page
-        pdf_page = new_pdf.new_page(pno=0, width=pdf_width, height=pdf_height)
-
-        # Insert first layer
+        # Process and insert first layer
         if isinstance(item1, Image.Image):
+            item1_resized = resize_image_to_exact_dimensions(item1, desired_width_pt, desired_height_pt)
             img_bytes_io = io.BytesIO()
-            item1.save(img_bytes_io, format='PNG')
+            item1_resized.save(img_bytes_io, format='PNG')
             img_bytes_io.seek(0)
             pdf_page.insert_image(pdf_page.rect, stream=img_bytes_io.read())
         elif isinstance(item1, str) and item1.lower().endswith('.pdf'):
             with fitz.open(item1) as pdf1:
                 pdf_page.show_pdf_page(pdf_page.rect, pdf1, 0)
 
-        # Insert second layer
+        # Process and insert second layer
         if isinstance(item2, Image.Image):
+            item2_resized = resize_image_to_exact_dimensions(item2, desired_width_pt, desired_height_pt)
             img_bytes_io = io.BytesIO()
-            item2.save(img_bytes_io, format='PNG')
+            item2_resized.save(img_bytes_io, format='PNG')
             img_bytes_io.seek(0)
             pdf_page.insert_image(pdf_page.rect, stream=img_bytes_io.read(), overlay=True)
         elif isinstance(item2, str) and item2.lower().endswith('.pdf'):
