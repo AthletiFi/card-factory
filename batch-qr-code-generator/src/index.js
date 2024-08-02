@@ -30,8 +30,8 @@ function generateQRFromCSV(csvFilePath) {
         .pipe(csv())
         .on('data', (row) => {
             // Ensure the URL field exists in the CSV
-            if (row.url) {
-                data.push(row.url);
+            if (row.qr_code_url) {
+                data.push(row.qr_code_url);
             }
         })
         .on('end', () => {
