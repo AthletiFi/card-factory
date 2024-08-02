@@ -46,8 +46,20 @@ def enhance_opacity(image, factor=1.0):
     return image
 
 def sanitize_path(input_path):
-    """ Sanitize the file path by replacing backslashes with spaces and stripping trailing spaces. """
-    return input_path.replace("\\", "").strip()
+    """ Sanitize the file path by handling both paths with escaped spaces and quoted paths. """
+    # First, strip any leading and trailing quotes
+    sanitized = input_path.strip('\'"')
+
+    # Then, replace backslash-space combinations with a space
+    sanitized = sanitized.replace("\\ ", " ").strip()
+
+    print(f"final path = {sanitized}")
+
+    # Check if the path exists
+    if os.path.exists(sanitized):
+        return sanitized
+    else:
+        raise FileNotFoundError(f"Sanitized path is not a valid file or directory: {sanitized}")
 
 # User input for directories, with path sanitization
 player_photos_dir = sanitize_path(input("Enter the file directory for the PLAYER photos: "))
