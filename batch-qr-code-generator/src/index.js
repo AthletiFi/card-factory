@@ -29,9 +29,10 @@ function generateQRFromCSV(csvFilePath) {
     fs.createReadStream(csvFilePath)
         .pipe(csv())
         .on('data', (row) => {
-            // Ensure the URL field exists in the CSV
-            if (row.qr_code_url) {
-                data.push(row.qr_code_url);
+            // Check for 'qrcode_url', 'qr_code_url', or 'url'
+            const url = row.qrcode_url || row.qr_code_url || row.url;
+            if (url) {
+                data.push(url);
             }
         })
         .on('end', () => {
@@ -40,7 +41,7 @@ function generateQRFromCSV(csvFilePath) {
                 return;
             }
             data.forEach((url, index) => createQR(url, index, qrCodeOptions));
-            console.log('QR Code generation has commenced! it will be done in a moment');
+            console.log('QR Code generation has commenced! It will be done in a moment');
         })
         .on('error', (oopsie) => {
             // Handle any errors during CSV file reading
