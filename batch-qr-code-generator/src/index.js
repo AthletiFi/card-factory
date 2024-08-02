@@ -15,8 +15,8 @@ async function createQR(url, filename, options) {
         // Ensure the qr_codes directory exists
         await fs.ensureDir('./qr_codes');
 
-        // Use the provided filename, but change extension to .svg
-        const svgFilename = filename.replace(/\.pdf$/, '.svg');
+        // Remove the .pdf extension and add _qr.svg
+        const svgFilename = filename.replace(/\.pdf$/, '_qr.svg');
         const filePath = path.join('./qr_codes', svgFilename);
 
         // Uncomment this if you want to do PNG instead: 
