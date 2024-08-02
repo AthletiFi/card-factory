@@ -13,7 +13,8 @@ async function createQR(url, index, options) {
 
     try {
         // Save QR code as a PNG file
-        await qrCode.toFile(`./qr_codes/qr_${index + 1}.png`, 'png');
+        // await qrCode.toFile(`./qr_codes/qr_${index + 1}.png`, 'png');
+        await qrCode.toFile(`./qr_codes/qr_${index + 1}.svg`, 'svg');
         console.log(`Generated QR code # ${index + 1}!`);
     } catch (error) {
         // Log any errors during QR code generation
@@ -29,8 +30,8 @@ function generateQRFromCSV(csvFilePath) {
         .pipe(csv())
         .on('data', (row) => {
             // Ensure the URL field exists in the CSV
-            if (row.url) {
-                data.push(row.url);
+            if (row.qr_code_url) {
+                data.push(row.qr_code_url);
             }
         })
         .on('end', () => {
