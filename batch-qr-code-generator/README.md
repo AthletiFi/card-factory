@@ -2,23 +2,23 @@
 
 ## Overview
 
-The Batch QR Code Generator tool is a a Node.js application that generates QR codes in bulk from a list of URLs provided in a CSV file. This tool is intended to be used to generate QR codes for the print version of AthletiFi Player Cards, to link them to their digital counterparts.
+The Batch QR Code Generator is a Node.js application that generates QR codes in bulk from a list of URLs provided in a CSV file. This tool is designed to generate QR codes for the print version of AthletiFi Player Cards, linking them to their digital counterparts.
 
 ## Requirements
 
 - Node.js: The runtime environment required to execute the script.
 - npm: To manage the project's dependencies.
-- CSV File: A CSV file containing URLs for which QR codes need to be generated. The file should have a column named 'url'.
+- CSV File: A CSV file containing URLs and filenames for QR code generation. The file should have columns named 'qrcode_url' (or 'qr_code_url' or 'url') and 'card_filename'.
 
 ## Installation
 
-1. Clone the repository
+1. Clone the repository:
 
    ```sh
    git clone https://github.com/AthletiFi/card-factory.git
    ```
 
-2. Navigate to the `batch-qr-code-generator` directory and install dependencies
+2. Navigate to the `batch-qr-code-generator` directory and install dependencies:
 
    ```sh
    cd card-factory/batch-qr-code-generator
@@ -27,29 +27,29 @@ The Batch QR Code Generator tool is a a Node.js application that generates QR co
 
 ## Usage
 
-1. **Set Up**: Prepare a CSV file with a list of URLs. Ensure each URL is in a new line under the column header 'url'.
+1. **Set Up**: Prepare a CSV file with a list of URLs and corresponding filenames. Ensure each row contains a URL (under 'qrcode_url', 'qr_code_url', or 'url' column) and a filename (under 'card_filename' column).
 
 2. Place the CSV file in the `batch-qr-code-generator` directory.
 
-3. **Run the Script**: Execute the script by running:'
+3. **Run the Script**: Execute the script by running:
 
    ```sh
    node batch-generate-qr.js
    ```
 
-4. **Enter the CSV file path**: After running the script, you will be prompted to enter the file path for your CSV file. Enter the path, including the filename and '.csv' at the end. If you placed the CSV file inside the `batch-qr-code-generator` directory, you can just enter the name of the file (e.g. `sample_urls.csv`)
+4. **Enter the CSV file path**: When prompted, enter the file path for your CSV file. If the file is in the current directory, you can just enter the filename (e.g., `Summer-Select-24_qr_code_ids.csv`).
 
-5. Check the QR codes. You will find them in the `qr_codes` directory.
+5. The script will generate QR codes and save them as SVG files in the `qr_codes` directory. Each QR code will be named to match its corresponding card filename (with .svg extension).
 
 ## Customization
 
-You can customize the appearance and properties of the QR codes by editing the `options.json` file located in the src directory. You can also generate your own `options.json` file by going to [https://qr-code-styling.com/](qr-code-styling.com) 
+You can customize the appearance and properties of the QR codes by editing the `options.json` file in the src directory. You can also generate your own `options.json` file by visiting [https://qr-code-styling.com/](https://qr-code-styling.com/).
 
 ## Troubleshooting
 
-- CSV Format Issues: Double-check the CSV format. The first row should be the header with 'url' as the column title, followed by rows containing URLs.
-- Module Not Found Errors: If you encounter module-related errors, try reinstalling the dependencies with npm install.
-- Output Directory Issues: Ensure the output directory for the generated QR codes exists. If it doesn't, create it or modify the script to point to an existing directory.
+- CSV Format Issues: Ensure your CSV has the correct column headers ('qrcode_url' or 'qr_code_url' or 'url', and 'card_filename').
+- Module Not Found Errors: If you encounter module-related errors, try reinstalling the dependencies with `npm install`.
+- Output Directory Issues: The script will create a `qr_codes` directory if it doesn't exist. Ensure you have write permissions in the current directory.
 
 For any other issues or questions, please open an [issue](https://github.com/AthletiFi/card-factory/issues).
 
