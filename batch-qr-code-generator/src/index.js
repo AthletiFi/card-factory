@@ -12,9 +12,14 @@ async function createQR(url, index, options) {
     const qrCode = new QRCodeCanvas({ ...options, data: url });
 
     try {
-        // Save QR code as a PNG file
+        // Ensure the qr_codes directory exists
+        await fs.ensureDir('./qr_codes');
+
+        const filePath = `./qr_codes/qr_${index + 1}.svg`;
+
+        // Uncomment this if you want to do PNG instead: 
         // await qrCode.toFile(`./qr_codes/qr_${index + 1}.png`, 'png');
-        await qrCode.toFile(`./qr_codes/qr_${index + 1}.svg`, 'svg');
+        await qrCode.toFile(filePath, 'svg');
         console.log(`Generated QR code # ${index + 1}!`);
     } catch (error) {
         // Log any errors during QR code generation
