@@ -1,48 +1,76 @@
-# card-factory
+# AthletiFi Player Card Generation
 
 ## Overview
 
-Thee `card-factory` serves as the central hub for the development and maintenance of tools and scripts that are used in the creation process of AthletiFi digital player cards. 
+Thee `card-factory` serves as the central hub for the development and maintenance of tools and scripts that are used in the creation process of AthletiFi digital player cards.  This project contains the scripts, assets, and instructions necessary for the generation process. It provides a structured workflow for creating both digital and print versions of player cards, including front and back designs.
 
-### Contents
+## Directory Structure
 
-The repository currently contains the following tools:
+- `assets/`: Contains all static assets for card generation
+  - `actions/`: Adobe actions for Illustrator and Photoshop
+  - `backgrounds/`: Card background files in PDF and PNG formats
+  - `borders/`: Card border files for digital and print versions
+  - `csv/`: Example CSV files for player information
+  - `fonts/`: Custom fonts used in card designs
+  - `templates/`: Adobe Illustrator templates for text layers
+- `scripts/`: Houses all scripts used in the card generation process
+  - `adobe/`: Scripts for Adobe products (Illustrator, Photoshop)
+  - `node/`: Node.js scripts for QR code generation
+  - `python/`: Python scripts for various data processing tasks
+  - `shell/`: Shell scripts for image processing
+- `docs/`: Detailed documentation for each part of the process
 
-- **Image Merger**: A Python script for crafting AthletiFi digital player cards unique artwork by combining the image layers for background, border, player images, player info and other graphical elements into the final visual layout. For more specific details, refer to the [Image Merger README](image-merger/README.md).
+## Prerequisites
 
-- **Batch QR Code Generator**: A Node.js script for batch generating QR codes for the print versions of AthletiFi Digital Player Cards. These QR codes are used on each physical player card, providing a link to the digital counterpart. For more information, refer to the [Batch QR Code Generator README](batch-qr-code-generator/README.md).
-
-- **Player Resizer Photoshop Script**: A Photoshop JS script designed to process player photos for AthletiFi player cards, ensuring all players are sized and positioned correctly within the card frame. It automates the resizing and repositioning of player images in Photoshop, specifically for the VSA collection player images. For more information, refer to the [Player Resizer Photoshop README](player-resizer-photoshop/README.md).
-
-- **Rectangularizer Photoshop Script**: A Photoshop JS script designed to generates a new version of the square Player Cards for rectangular dimensions. It extends the frame and the background using a pre-designed overlay to match the existing  background. For more information, refer to the [Rectangularizer Photoshop README](rectangularizer-photoshop/README.md).
-
-## Getting Started
-
-To get started with these scripts, you'll need to clone the repository and set up the environments for both the Python and Node.js components.
-
-### Prerequisites
-
-- Python 3.x
+- Adobe Illustrator
+- Adobe Photoshop
+- Python
 - Node.js
+- ImageMagick
+- cwebp
 
-### Installation
+## Setup
 
-1. Clone the repository
+1. Install all prerequisites mentioned above
+2. Clone this repository to your local machine
+3. Install Python dependencies: `pip install -r scripts/python/requirements.txt`
+4. Install Node.js dependencies:
 
-   ```sh
-   git clone https://github.com/AthletiFi/card-factory.git
+   ```shell
+   cd scripts/node/batch-qr-code-generator
+   npm install
    ```
-
-2. Navigate to the script directory of your choice and follow the setup instructions in the respective README file.
 
 ## Usage
 
-Each script within this repository plays a unique role in the AthletiFi digital player card generation process. Navigate to the respective directories and consult their README files for detailed usage instructions.
+The card generation process is divided into multiple steps, each utilizing different scripts and tools. For detailed instructions on each step, please refer to the documentation in the `docs/` directory:
+
+- [Process Overview](docs/overview.md)
+- [Front Card Generation](docs/front-card-generation.md)
+- [Back Card Generation](docs/back-card-generation.md)
+- [Tools and Scripts](docs/tools-and-scripts.md)
+
+## Workflow Summary
+
+1. Process player photos (Adobe Photoshop)
+2. Create text layers (Adobe Illustrator)
+3. Merge text layers with player photos
+4. Prepare backgrounds
+5. Combine background and player components
+6. Add borders for digital and print versions
+7. Add trim marks (print version only)
+8. Convert to PNG and WebP (digital version only)
+9. Generate and add QR codes (for card backs)
+10. Format QR codes in Illustrator
+11. Add QR codes to card backs
+12. Add trim marks to card backs
+
+Each of these steps involves specific scripts and actions, detailed in the documentation.
+
+## Troubleshooting
+
+For common issues and their solutions, see our [Troubleshooting Guide](docs/troubleshooting.md).
 
 ## Contributing
 
-If you wish to contribute to the development of these tools, please submit a pull request or open an issue to discuss the changes.
-
-## License
-
-This software is licensed under the BSD 3-Clause License. For full license details, see the [LICENSE](LICENSE) file in this repository.
+We welcome contributions to improve the card generation process. Please ensure you update relevant documentation when making changes.
