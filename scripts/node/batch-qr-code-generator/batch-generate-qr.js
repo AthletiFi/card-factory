@@ -2,7 +2,6 @@ const readline = require('readline');
 const fs = require('fs');
 const { generateQRFromCSV } = require('./src/index');
 
-
 const rl = readline.createInterface({
   input: process.stdin,
   output: process.stdout
@@ -10,52 +9,79 @@ const rl = readline.createInterface({
 
 // Function to check if the input is a valid path
 const isValidPath = (path) => {
-  // Trim the path to remove any leading or trailing whitespace
-  path = path.trim();
-
-  // Remove any surrounding quotes (single or double)
-  path = path.replace(/^['"](.+)['"]$/, '$1');
-
-  // Simplified regex to check if the file path ends with .csv
+  path = path.trim().replace(/^['"](.+)['"]$/, '$1');
   const pathRegex = /\.csv$/i;
   return pathRegex.test(path);
 };
 
-// Prompt for the CSV file path
-rl.question('Please enter the path to your CSV file: ', (csvFilePath) => {
+function printWelcomeMessage() {
+    console.log(`
+╔════════════════════════════════════════════════════════════════════════════╗
+║             Welcome to AthletiFi QR Code Batch Generator                   ║
+╚════════════════════════════════════════════════════════════════════════════╝
 
-  // Trim the path to remove any leading or trailing whitespace
-  // csvFilePath = csvFilePath.trim()
-  // Trim the path and remove quotes
-  csvFilePath = csvFilePath.trim().replace(/^['"](.+)['"]$/, '$1');;
+┌──────────────────────────────────────────────────────────────────────────┐
+│ This tool generates QR codes for AthletiFi player cards, linking each    │
+│ card to its unique digital experience.                                   │
+└──────────────────────────────────────────────────────────────────────────┘
 
-  // Check if the input is a valid path after cleaning
-  if (!isValidPath(csvFilePath)) {
-    console.error(`Error: The input '${csvFilePath}' is not a valid path for a csv file.`);
-    rl.close();
-    return;
-  }
+Key Features:
+✦ Generates SVG QR codes from URLs provided in a CSV file
+✦ Automatically names QR codes to match corresponding player card filenames
+✦ Uses custom styling options for visually appealing QR codes
 
-  // Check if the provided path exists
-  if (!fs.existsSync(csvFilePath)) {
-    console.error(`Error: ${csvFilePath} does not exist.`);
-    rl.close();
-    return;
-  }
+Please follow the prompts to begin generating your QR codes.
+    `);
+}
 
-  // Call the function to generate QR codes
-  try {
-    generateQRFromCSV(csvFilePath);
-  } catch (error) {
-    console.error(`An error occurred while generating QR codes: ${error.message}`);
-  }
+function printConcludingMessage(totalGenerated) {
+    console.log(`
+╔════════════════════════════════════════════════════════════════════════════╗
+║                   QR Code Batch Generation Complete                        ║
+╚════════════════════════════════════════════════════════════════════════════╝
 
-  rl.close();
-});
+┌──────────────────────────────────────────────────────────────────────────┐
+│ All QR codes have been successfully generated and saved.                 │
+└──────────────────────────────────────────────────────────────────────────┘
 
+Total QR codes generated: ${totalGenerated}
 
-// Version without prompting:
-// const csvFilePath = './sample_urls.csv';
-// generateQRFromCSV(csvFilePath);
+Next Steps:
+1. Check the 'qr_codes' directory for all generated SVG files.
+2. Verify that each QR code corresponds to the correct player card.
+3. Proceed with integrating these QR codes into your player card designs.
 
+Thank you for using the AthletiFi QR Code Batch Generator!
+    `);
+}
 
+async function main() {
+    printWelcomeMessage();
+
+    rl.question('Please enter the path to your CSV file: ', async (csvFilePath) => {
+        csvFilePath = csvFilePath.trim().replace(/^['"](.+)['"]$/, '$1');
+
+        if (!isValidPath(csvFilePath)) {
+            console.error(`Error: The input '${csvFilePath}' is not a valid path for a CSV file.`);
+            rl.close();
+            return;
+        }
+
+        if (!fs.existsSync(csvFilePath)) {
+            console.error(`Error: ${csvFilePath} does not exist.`);
+            rl.close();
+            return;
+        }
+
+        try {
+            const totalGenerated = await generateQRFromCSV(csvFilePath);
+            printConcludingMessage(totalGenerated);
+        } catch (error) {
+            console.error(`An error occurred while generating QR codes: ${error.message}`);
+        } finally {
+            rl.close();
+        }
+    });
+}
+
+main();
