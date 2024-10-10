@@ -50,8 +50,9 @@ To ensure proper naming and correspondence with the front images, we'll regenera
 
 2. Choose option 1: "Rename newly generated files to the standard naming convention"
 3. Enter the path to the folder with the PDFs you just generated
-   > [!IMPORTANT]
-   > The `rename_files.py` script may not use the same sequencing the second time even if you pass in the same set of files, as the process is not deterministic. Therefore, for the BACK cards, you need to run `rename_files.py` a second time.
+
+> [!IMPORTANT]
+> The `rename_files.py` script may not use the same sequencing the second time even if you pass in the same set of files, as the process is not deterministic. Therefore, for the BACK cards, you need to run `rename_files.py` a second time.
 
 4. Run the `rename_files.py` script again, this time selecting option 2 for fixing the number sequence of generated player card BACKS which do not match the sequence of the initial generation for FRONTs. When prompted:
    - Enter the directory path containing correctly named files (e.g., front cards)
@@ -69,9 +70,19 @@ To ensure proper naming and correspondence with the front images, we'll regenera
 
 ### 2.2 Modify Vector Borders
 
-1. Open the Vector Borders file in Adobe Illustrator.
-2. Render the Vector Borders in Blue.
-3. Add the QR Frame Background to the border.
+1. Locate the back border for your club in the `assets/borders/<club_name>/back_border/` directory. The file should be named `<club_name>-vector_border_blue.pdf`.
+
+2. If the back border for your club doesn't exist, follow these steps to create one:
+   a. Choose an existing back border file from another club as a template (e.g., from [athletifi_select](../assets/borders/athletifi_select/back_border/) or [coventry_sa](../assets/borders/coventry_sa/back_border/)).
+   b. Open the template file in Adobe Illustrator.
+   c. Find an existing vectorized version of the logo for the club you're generating cards for.
+   d. Import this logo into the Illustrator file and place it over the original club logo.
+   f. Adjust the size of the new logo to match the size of the previous club logo.
+   g. Position the new logo to roughly match the position of the previous logo.
+   h. Delete the previous club logo.
+   i. Save this as a new PDF file in the club folder for this club following the naming convention:
+      `<club_name>-vector_border_blue.pdf`
+
 
 ### 2.3 Add Borders to Cards
 

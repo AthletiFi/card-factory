@@ -8,8 +8,9 @@ The front card generation process for AthletiFi player cards involves a series o
 
 - Cut out the players so they are against a transparent background.
 - Ensure all player photos are saved as PNGs and named using the convention `<First Name>-<Last Name>-<JerseyNumber>`.
-  > [!NOTE]  
-  > Pay attention to players who have double first names or double last names (e.g., Anderson Rodriguez Dinarte has the first name Anderson, but Daisy Grace Kerrigan has the first name Daisy Grace).
+
+> [!NOTE]  
+> Pay attention to players who have double first names or double last names (e.g., Anderson Rodriguez Dinarte has the first name Anderson, but Daisy Grace Kerrigan has the first name Daisy Grace).
 
 ### 1.2 Set Up Photoshop
 
@@ -114,10 +115,11 @@ The script will automatically process each image using the same settings as `Pro
 
 1. For each text box you want to update dynamically:
    - Select the text box
-     > [!TIP]  
-     > :memo: **Pro tip 1**: If it is difficult to select the text box because it is behind another element, open the layers window and click on the circle to the right of the layer name, and that will select it.
-     > [!TIP]  
-     > :memo: **Pro tip 2**: Name all of the layers by the property of the text they are supposed to represent (e.g. PlayerNumberA)
+
+> [!TIP]  
+> :memo: **Pro tip 1**: If it is difficult to select the text box because it is behind another element, open the layers window and click on the circle to the right of the layer name, and that will select it.
+> [!TIP]  
+> :memo: **Pro tip 2**: Name all of the layers by the property of the text they are supposed to represent (e.g. PlayerNumberA)
 
    - In the Variables panel, find the variable that is supposed to link to this textbox (e.g. PlayerFirstName)
    - In the Variables panel, click the menu hamburger icon (three horizontal lines) and then click the "Make Text Dynamic" button. You should now See the Objects column list the name of the layer for that text box
@@ -194,8 +196,8 @@ The script will process each PNG file, creating a corresponding PDF with the cor
 
 3. Verify results to ensure the dimensions are correct (3.875 x 2.875 inches) and the background is correctly positioned.
 
-  > [!IMPORTANT]  
-  > The script matches SVG files to PNG files based on the player's name, so ensure your file naming is consistent.
+> [!IMPORTANT]  
+> The script matches SVG files to PNG files based on the player's name, so ensure your file naming is consistent.
 
 ## 5. Combine Background and Player Components
 
@@ -262,9 +264,33 @@ Now that we have the Player Photo combined with the Background image, all that i
 ### 6.1 Prepare Files
 
 1. Ensure all combined player/background PDFs from Step 5 are in a single folder. If you have different editions (e.g. Bronze and Silver) you will have to run this script separately for each edition.
-2. Have your border PDF files ready. You should have separate border files for [digital](../assets/borders/digital/front-step6/) and [print](../assets/borders/print/front-step6/) versions, and for the different editions (e.g. Bronze and Silver). These border files are located in the following directories:
-   - Digital borders: `assets/borders/digital/front-step6/`
-   - Print borders: `assets/borders/print/front-step6/`
+2. Locate the appropriate border files for your club. These are found in:
+   `assets/borders/<club_name>/`
+   Where `<club_name>` is the name of the club you're generating cards for (e.g., 'athletifi_select' or 'coventry_sa').
+3. Ensure you have the correct border files for both digital and print versions, and for the different editions (e.g. Bronze and Silver).
+4. If the border files for your club do not exist, follow these steps to create them:
+   a. First, create a new folder for the club in the [borders directory](../assets/borders), and add folders for `digital_borders`, `print_borders`, and for the `back_border` (this will be used later in [step 2 of the back card generation process](./back-card-generation.md#2-render-borders-blue-and-add-to-cards)):
+
+      ```plaintext
+      assets/borders/<club_name>/
+                              ├── back_border/
+                              ├── digital_borders/
+                              └── print_borders/
+      ```
+
+   b. Choose an existing border file as a template (e.g., from [athletifi_select](../assets/borders/athletifi_select/) or [coventry_sa](../assets/borders/coventry_sa/)).
+   c. Open the file in Adobe Illustrator.
+   d. You'll notice two layers: 'Border' and 'Club Logo'.
+   e. Find an existing vectorized version of the logo for the club you're generating cards for.
+   f. Import this logo into the Illustrator file and place it in the 'Club Logo' layer.
+   g. Adjust the size of the new logo to match the size of the previous club logo.
+   h. Position the new logo to roughly match the position of the previous logo.
+   i. Delete the previous club logo.
+   j. Save this as a new PDF file following the naming convention:
+      `<club_name>-<digital/print>_vector_border_<edition>.pdf`
+
+   k. Save the digital version in the 'digital_borders' folder and the print version in the 'print_borders' folder.
+   l. Repeat this process for both digital and print versions, and for each edition (bronze/silver).
 
 ### 6.2 Apply Borders
 
@@ -296,8 +322,6 @@ In Illustrator the bleed is set by clicking on 'File' > 'Document Setup…' and 
    - Choose "Load Actions".
    - Navigate to the `assets/actions/illustrator/front-step7_back-step7/` directory and select `AddTrimMarksToPrintCards.aia`.
 4. Modify the action to re-record the "Save" and "Close" steps
-   > [!NOTE]  
-   > We must re-record these steps because when an action is played back, it uses the directory path from when the action was initially recorded. By re-recording this step, you ensure that the files will be saved in the correct location during batch processing.
    - Expand the "AddTrimMarksToPrintCards" action set in the Actions panel.
    - Select the "AddTrimMarksToPrintCards" action.
    - Delete the last two steps: "Save" and "Close" (select each step and click the trash icon at the bottom of the Actions panel).
@@ -311,8 +335,11 @@ In Illustrator the bleed is set by clicking on 'File' > 'Document Setup…' and 
    - Click Save.
    - Go to 'File' > 'Close'.
    - Click the "Stop recording" button (square icon) at the bottom of the Actions panel.
-   > [!NOTE]  
-   > If no other files are open in Illustrator, the actions window may disappear. Click ‘Window’ > ‘Actions’ in the menu to bring back the Actions window so you can click the stop button.
+
+> [!NOTE]  
+> We must re-record these steps because when an action is played back, it uses the directory path from when the action was initially recorded. By re-recording this step, you ensure that the files will be saved in the correct location during batch processing.
+> [!TIP]  
+> If no other files are open in Illustrator, the actions window may disappear. Click ‘Window’ > ‘Actions’ in the menu to bring back the Actions window so you can click the stop button.
 
 ### 7.2 Run Batch Process
 
@@ -367,8 +394,9 @@ Before you begin, make sure you have ImageMagick and cwebp installed on your sys
    - Enter the path to the folder containing your PNG files (output from [step 8.1](#81-convert-pdf-to-png)).
    - Enter the path where you want to save the cropped and converted WebP files.
    - Enter the desired resize percentage:
-   > [!NOTE]  
-   > It is recommended to reduce the size of the player card to around 40-50% so that the final dimensions are not larger than ~2000px. Enter 100 if you do not wish to resize.
+
+> [!NOTE]  
+> It is recommended to reduce the size of the player card to around 40-50% so that the final dimensions are not larger than ~2000px. Enter 100 if you do not wish to resize.
 
 The script will process all PNG files, cropping out excess transparent space and converting them to WebP format.
 
