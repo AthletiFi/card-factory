@@ -83,7 +83,6 @@ To ensure proper naming and correspondence with the front images, we'll regenera
    i. Save this as a new PDF file in the club folder for this club following the naming convention:
       `<club_name>-vector_border_blue.pdf`
 
-
 ### 2.3 Add Borders to Cards
 
 1. Open Adobe Illustrator and go to 'File' > 'Scripts' > 'Other Script...'.
