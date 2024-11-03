@@ -38,7 +38,7 @@ To ensure proper naming and correspondence with the front images, we'll regenera
    - Output directory: path to your desired output folder for digital cards
    - Layer 1 path: path to the directory containing background PDFs
    - Layer 2 path: path to the directory containing blank player photos PDFs
-3. Choose the 'COMBINE' option when prompted.
+4. Repeat this process for any additional editions in this collection (e.g. Bronze or Silver)
 
 ### 1.4 Rename Files
 
@@ -55,8 +55,8 @@ To ensure proper naming and correspondence with the front images, we'll regenera
 > The `rename_files.py` script may not use the same sequencing the second time even if you pass in the same set of files, as the process is not deterministic. Therefore, for the BACK cards, you need to run `rename_files.py` a second time.
 
 4. Run the `rename_files.py` script again, this time selecting option 2 for fixing the number sequence of generated player card BACKS which do not match the sequence of the initial generation for FRONTs. When prompted:
-   - Enter the directory path containing correctly named files (e.g., front cards)
-   - Enter the directory path containing files to be renamed (e.g., back cards)
+   - Enter the directory path containing correctly named files (e.g., the final front card PDFs completed in [step 7](back-card-generation.md#7-add-trim-marks-for-backs))
+   - Enter the directory path containing files to be renamed (e.g., back cards we are currently working on)
 
 > [!NOTE]  
 > This second run will ensure that the numbering sequence of the BACK cards matches the sequence of the FRONT cards, maintaining consistency between the front and back of each player card.
@@ -65,23 +65,21 @@ To ensure proper naming and correspondence with the front images, we'll regenera
 
 ### 2.1 Prepare Files
 
-1. Ensure all combined player/background PDFs from Step 1 are in a single folder. If you have different editions (e.g. Bronze and Silver) you will have to run this script separately for each edition.
-2. Copy the Print version of the Vector Borders (digital cards do not need backs so you don't need the digital version).
+1. Ensure all combined player/background PDFs from Step 1 are in a single folder. Even if you have different editions (e.g. Bronze and Silver) you will only need to run this script once for all of the player cards, because the back border is blue for them all.
+2. Locate the back border for your club in the `assets/borders/<club_name>/back_border/` directory. The file should be named `<club_name>-vector_border_blue.pdf`.
 
-### 2.2 Modify Vector Borders
+### 2.2 Modify Vector Borders (optional)
 
-1. Locate the back border for your club in the `assets/borders/<club_name>/back_border/` directory. The file should be named `<club_name>-vector_border_blue.pdf`.
+If the back border for your club doesn't exist, follow these steps to create one:
 
-2. If the back border for your club doesn't exist, follow these steps to create one:
-   a. Choose an existing back border file from another club as a template (e.g., from [athletifi_select](../assets/borders/athletifi_select/back_border/) or [coventry_sa](../assets/borders/coventry_sa/back_border/)).
-   b. Open the template file in Adobe Illustrator.
-   c. Find an existing vectorized version of the logo for the club you're generating cards for.
-   d. Import this logo into the Illustrator file and place it over the original club logo.
-   f. Adjust the size of the new logo to match the size of the previous club logo.
-   g. Position the new logo to roughly match the position of the previous logo.
-   h. Delete the previous club logo.
-   i. Save this as a new PDF file in the club folder for this club following the naming convention:
-      `<club_name>-vector_border_blue.pdf`
+1. Choose an existing back border file from another club as a template (e.g., from [athletifi_select](../assets/borders/athletifi_select/back_border/) or [coventry_sa](../assets/borders/coventry_sa/back_border/)).
+2. Open the template file in Adobe Illustrator.
+3. Find an existing vectorized version of the logo for the club you're generating cards for.
+4. Import this logo into the Illustrator file and place it over the original club logo.
+5. Adjust the size of the new logo to match the size of the previous club logo.
+6. Position the new logo to roughly match the position of the previous logo.
+7. Delete the previous club logo.
+8. Save this as a new PDF file in the club folder for this club following the naming convention: `<club_name>-vector_border_blue.pdf`
 
 ### 2.3 Add Borders to Cards
 
@@ -108,13 +106,14 @@ To ensure proper naming and correspondence with the front images, we'll regenera
 
 ### 3.2 Parse Filenames
 
-1. Run the [parse_filenames.py](../scripts/python/back-step3/parse_filenames.py) script:
+1. Navigate to the `scripts/python/back-step3/` directory.
+2. Run the [parse_filenames.py](../scripts/python/back-step3/parse_filenames.py) script:
 
    ```shell
    python3 parse_filenames.py
    ```
 
-2. When prompted, enter the path to the CSV file containing the filenames.
+3. When prompted, enter the path to the CSV file containing the filenames.
 
 > [!NOTE]  
 > This script will generate a new CSV file called `parsed_card_data.csv` with extracted information from the filenames, including both the original PDF filename and the corresponding WebP filename.

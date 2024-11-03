@@ -137,6 +137,9 @@ The script will automatically process each image using the same settings as `Pro
 2. When prompted, choose a destination to save the SVG files.
 3. Repeat as necessary if you have single digits, double digits, long last names, etc (there are different text layer template files for each of these).
 
+> [!TIP]  
+> You can optionally save any of these Illustrator scripts to '/Applications/Adobe Illustrator 2024/Presets.localized/en_US/Scripts/' to have it appear directly in the scripts menu.
+
 ## 3. Merge Text Layers with Player Photos
 
 ### 3.1 Prepare Files
@@ -145,6 +148,7 @@ The script will automatically process each image using the same settings as `Pro
 2. In order for the merge script to work, the PNGs and text layers must follow a precise naming structure. The text layers will already be in the correct structure if you ran  [saveTextLayersAsSVG](../scripts/adobe/illustrator/front-step2/saveTextLayersAsSVG.jsx). Please ensure to name the PNG files consistently, following one of these patterns: 
    - `[PlayerFirstName] [PlayerLastName]-[Number]-[running,shooting or standing]-pose-print.png`
    - `[PlayerFirstName] [PlayerLastName]-[Number].png`
+   - `[PlayerFirstName]-[PlayerLastName]-[Number].png`
 3. Place all player photo PNGs in a single folder.
 4. Ensure you have a folder containing all the SVG files from the [Create Text Layers](#2-create-text-layers) step.
 
@@ -313,25 +317,28 @@ For both the front and the backs, instead of printing at 2.5" x 3.5", which is s
 
 In Illustrator the bleed is set by clicking on 'File' > 'Document Setup…' and setting a bleed on that menu, which will set on the outside of the artboard. So this means the artboard will still have to be changed from  2.875”x3.875” to 2.625”x3.625”. But we still need to extend the artwork to the edge of the bleed to ensure there is actually content in the bleed. We have created an Illustrator action to do this by creating a square at the correct dimensions for the artboard, then using “Insert Menu Item” to add the action “Fit to Selected Art”, using the align buttons to center the square vertically and horizontally, then deleting the square, and then finally saving the pdf with trim marks enabled.
 
-### 7.1 Set Up Illustrator Action
+### 7.1 Prepare Files and Set Up Illustrator Action
 
-1. Open Adobe Illustrator.
-2. Open the Actions panel ('Window' > 'Actions').
+1. Ensure all the print versions of the player cards from the previous stepped have been moved into a new directory. It is recommended that you combine the various editions into a single directory, as there is no need to keep them separate for this step, and then you can run the batch a single time.
+2. In Adobe Illustrator, open the Actions panel ('Window' > 'Actions').
 3. Load the [AddTrimMarksToPrintCards.aia](../assets/actions/illustrator/front-step7_back-step7/AddTrimMarksToPrintCards.aia) action set:
    - Click the panel menu icon (four horizontal lines) in the Actions panel.
    - Choose "Load Actions".
    - Navigate to the `assets/actions/illustrator/front-step7_back-step7/` directory and select `AddTrimMarksToPrintCards.aia`.
 4. Modify the action to re-record the "Save" and "Close" steps
+   - First, open an example file from the output folder of the previous step. It is recommended that you create a copy of this file first as a backup, and then replace the modified version of the file with the backup, so that it may be run as part of the batch again.
+   - Ensure that the document units for this file is set to Inches. If not, open the Properties window, make sure you have no elements selected, then navigate to the Document section, and click on the Units dropdown, and select Inches.
    - Expand the "AddTrimMarksToPrintCards" action set in the Actions panel.
    - Select the "AddTrimMarksToPrintCards" action.
    - Delete the last two steps: "Save" and "Close" (select each step and click the trash icon at the bottom of the Actions panel).
    - Click the "Begin recording" button (circle icon) at the bottom of the Actions panel.
-   - With the action selected, go to 'File' > 'Save As'.
+   - With the example file selected, go to 'File' > 'Save As'.
    - In the Save As dialog:
-     - Keep the filename the same.
+     - Keep the filename and directory the same.
+     - You will be prompted with `"[filname]" already exists. Do you want to replace it?`. Click Yes.
      - Choose the [High Quality Print] preset.
      - Go to the 'Marks and Bleeds' section in the sidebar, then navigate to the Marks section and check 'Trim Marks'.
-     - Still within 'Marks and Bleeds', navigate to 'Bleeds', and set the bleed on all four sides to '0.125 in'.
+     - Still within 'Marks and Bleeds', navigate to 'Bleeds', and set the bleed on all four sides to '0.125 in' (you may need to uncheck "Use Document Bleed Settings" in order for this option to be enabled).
    - Click Save.
    - Go to 'File' > 'Close'.
    - Click the "Stop recording" button (square icon) at the bottom of the Actions panel.
@@ -400,9 +407,9 @@ Before you begin, make sure you have ImageMagick and cwebp installed on your sys
 
 The script will process all PNG files, cropping out excess transparent space and converting them to WebP format.
 
-### 8.3 Rename WebP Files
+### 8.3 Rename WebP Files (optional)
 
-You must remove spaces from the WebP filenames so that they do not have spaces. This is needed so that the url will work when the files are loaded into s3. Otherwise s3 will replace spaces with `%20` and then the filenames will not match with the records we add into the database.
+If your WebP filenames include spaces, you must remove them from before uploading into s3. This is necessary for proper URL formatting when the files are loaded into S3. Otherwise S3 will replace spaces with `%20` and then the filenames will not match with the records we add into the database.
 
 1. In the same `scripts/shell/front-step8/` directory, run the `[replace_spaces_with_hyphens.py](../scripts/python/) script:
 
@@ -412,6 +419,6 @@ You must remove spaces from the WebP filenames so that they do not have spaces. 
 
 2. When prompted, enter the path to the directory containing your WebP files.
 
-The script will rename all WebP files, replacing spaces with hyphens. This is necessary for proper URL formatting when the files are loaded into S3.
+The script will rename all WebP files, replacing spaces with hyphens. The WebP files are now ready for uploading into S3.
 
 This completes the generation process for the card fronts! Always review the output at each stage to ensure quality and consistency across all cards. When you are ready, proceed with [generating the card backs](back-card-generation.md).

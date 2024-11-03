@@ -21,14 +21,18 @@ EOF
 
 sanitize_path() {
     local input_path="$1"
-    local sanitized="${input_path//\\/ }"
-    sanitized="${sanitized%\"}"
-    sanitized="${sanitized#\"}"
+    # Remove both single and double quotes
+    local sanitized="${input_path//[\'\"]/}"
+    # Replace backslashes with forward slashes
+    sanitized="${sanitized//\\//}"
+    # Trim leading and trailing whitespace
+    sanitized="$(echo -e "${sanitized}" | sed -e 's/^[[:space:]]*//' -e 's/[[:space:]]*$//')"
     
     if [ -d "$sanitized" ]; then
         echo "$sanitized"
     else
-        echo "Error: Sanitized path is not a valid directory: $sanitized" >&2
+        echo "Directory not found: $sanitized" >&2
+        echo "Please check if the path exists and try again." >&2
         return 1
     fi
 }

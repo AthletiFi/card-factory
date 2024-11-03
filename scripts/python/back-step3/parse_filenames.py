@@ -15,7 +15,7 @@ def parse_filename(filename):
     
     patterns = [
         # New pattern
-        re.compile(r'([A-Za-z\' ]+)-(\d+)-(Bronze|Silver)-(.+?)-(\d+)\.pdf'),
+        re.compile(r'([A-Za-z\' ]+)-([A-Za-z\' ]+)-(\d+)-(Bronze|Silver)-(.+?)-(\d+)\.pdf'),
         # Old patterns
         re.compile(r'(Bronze|Silver) v2 - (.+?)_(CMYK|RGB)?_?(.+?)-(\d+)-with-text-layer_.+?_(\d+)\.pdf'),
         re.compile(r'(Bronze|Silver) v2 - (.+?)_(CMYK|RGB)_(.+?)-(\d+)-with-text-layer_.+?vector border with bleed_(\d+)\.pdf'),
@@ -40,23 +40,37 @@ def parse_filename(filename):
                 # Handle named groups
                 data = match.groupdict()
                 full_name = data.get('player_name', '')
+                names = full_name.split('-', 1) if '-' in full_name else [full_name, '']
+                first_name = names[0]
+                last_name = names[1] if len(names) > 1 else ""
             else:
-                # Handle unnamed groups
+                # Handle unnamed groups for new pattern (first_name-last_name-number-edition-theme-serial)
                 groups = match.groups()
-                if len(groups) == 5:  # New pattern
-                    full_name, jersey_number, edition, theme, serial_number = groups
+                if len(groups) == 6 and groups[3] in ['Bronze', 'Silver']:  # New pattern
+                    first_name = groups[0]
+                    last_name = groups[1]
+                    jersey_number = groups[2]
+                    edition = groups[3]
+                    theme = groups[4]
+                    serial_number = groups[5]
                 elif len(groups) == 6:  # Most old patterns
-                    edition, theme, _, full_name, jersey_number, serial_number = groups
+                    edition = groups[0]
+                    theme = groups[1]
+                    full_name = groups[3]
+                    names = full_name.split('-', 1) if '-' in full_name else [full_name, '']
+                    first_name = names[0]
+                    last_name = names[1] if len(names) > 1 else ""
+                    jersey_number = groups[4]
+                    serial_number = groups[5]
                 else:  # Other old patterns
                     full_name = groups[2] if len(groups) > 2 else ''
+                    names = full_name.split('-', 1) if '-' in full_name else [full_name, '']
+                    first_name = names[0]
+                    last_name = names[1] if len(names) > 1 else ""
                     jersey_number = groups[4] if len(groups) > 4 else ''
                     edition = groups[0] if groups[0] in ['Bronze', 'Silver'] else ''
                     theme = groups[1] if groups[1] not in ['Bronze', 'Silver'] else ''
                     serial_number = groups[-1]
-
-            names = full_name.split(maxsplit=1)
-            first_name = names[0]
-            last_name = names[1] if len(names) > 1 else ""
 
             # Convert filename to webp and replace spaces with hyphens
             webp_filename = original_filename.rsplit('.', 1)[0] + '.webp'
