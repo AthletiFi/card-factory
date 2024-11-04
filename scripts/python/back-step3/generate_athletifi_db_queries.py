@@ -152,17 +152,13 @@ def generate_insert_card_images_query(player_groups, collection_name, team_name,
                 dashboard_slug = f"{collection_name}/{next_slug_number}"
 
                 queries.append(f"""
-                WITH team_info AS (
-                    SELECT team_id 
-                    FROM teams 
-                    WHERE team_name = '{team_name}'
-                )
                 INSERT INTO player_card_images (player_id, competition_id, card_image_url, dashboard_slug)
                 SELECT 
-                    (SELECT player_id FROM players_team_info pti
+                    (SELECT pti.player_id 
+                     FROM players_team_info pti
                      JOIN player_identities pi ON pti.player_identity = pi.id
-                     WHERE pi.player_first_name = '{first_name}' AND pi.player_last_name = '{last_name}' 
-                     AND pti.team_id = (SELECT team_id FROM team_info)),
+                     WHERE pi.player_first_name = '{first_name}' 
+                     AND pi.player_last_name = '{last_name}'),
                     @competition_id,
                     '{card_image_url}',
                     '{dashboard_slug}'
@@ -170,7 +166,6 @@ def generate_insert_card_images_query(player_groups, collection_name, team_name,
                 -- Note: Conflicts indicate existing records and require manual investigation
                 """)
                 next_slug_number += 1
-
 
     return queries, next_slug_number
 
