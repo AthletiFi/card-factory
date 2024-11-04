@@ -1,7 +1,6 @@
 // QR Code Overlay Script for Adobe Illustrator (Player Card Backs)
 #target illustrator
 
-// Updated intro function
 function showIntro() {
     alert(
         "----------------------------------------\n" +
@@ -15,9 +14,9 @@ function showIntro() {
         "3. An output folder for the combined PDFs\n\n" +
         "The script will:\n" +
         "✦ Match each back design with its corresponding QR code\n" +
-        "✦ Overlay the QR code on the card back\n" +
+        "✦ Overlay the QR code on the card back (perfectly centered)\n" +
         "✦ Save new PDFs with '_QR' appended to the filename\n\n" +
-        "Ensure that your QR codes are properly formatted and sized before running\n" +
+        "Ensure that your QR codes are properly formatted before running\n" +
         "this script.\n\n" +
         "Let's complete the final step of your player card creation!"
     );
@@ -27,10 +26,32 @@ function showIntro() {
 function normalizeFilename(filename) {
     // Decode URL-encoded characters first
     var decoded = decodeURI(filename);
-    return decoded.replace(/[-\s]/g, '_')  // Replace hyphens and spaces with underscores
-                  .replace(/__+/g, '_')    // Replace multiple underscores with a single one
-                  .replace(/_qr\.pdf$/i, '.pdf')  // Remove '_qr' before '.pdf'
+    return decoded.replace(/[-\s]/g, '_')
+                  .replace(/__+/g, '_')
+                  .replace(/_qr\.pdf$/i, '.pdf')
                   .toLowerCase();
+}
+
+function centerQRCode(doc, qrItem) {
+    // Get document dimensions
+    var docWidth = doc.width;
+    var docHeight = doc.height;
+    
+    // Get QR code dimensions
+    var qrWidth = qrItem.width;
+    var qrHeight = qrItem.height;
+    
+    // Calculate center position
+    var x = (docWidth - qrWidth) / 2;
+    var y = (docHeight + qrHeight) / 2;
+    
+    // Apply position
+    qrItem.position = [x, y];
+    
+    // Log the placement
+    $.writeln("Document dimensions: " + docWidth + " x " + docHeight);
+    $.writeln("QR code dimensions: " + qrWidth + " x " + qrHeight);
+    $.writeln("Placed at: x=" + x + ", y=" + y);
 }
 
 // Main script
@@ -61,6 +82,7 @@ try {
     // Process each back design file
     var processedCount = 0;
     var errorCount = 0;
+
     for (var i = 0; i < backFiles.length; i++) {
         var backFile = backFiles[i];
         var normalizedBackName = normalizeFilename(backFile.name);
@@ -69,26 +91,29 @@ try {
         var qrFile = qrFileMap[normalizedBackName];
 
         if (qrFile) {
-            // Open the back design PDF
-            var doc = app.open(backFile);
+            try {
+                var doc = app.open(backFile);
+                var qrItem = doc.placedItems.add();
+                qrItem.file = qrFile;
 
-            // Place the QR code PDF
-            var qrItem = doc.placedItems.add();
-            qrItem.file = qrFile;
+                // Center the QR code
+                centerQRCode(doc, qrItem);
 
-            // Set the position to [0, doc.height] to place it directly on top of the background
-            qrItem.position = [0, doc.height];
+                // Save and close
+                var saveOptions = new PDFSaveOptions();
+                var saveFile = new File(outputFolder + "/" + backFile.name.replace(".pdf", "_QR.pdf"));
+                doc.saveAs(saveFile, saveOptions);
+                doc.close();
 
-            // Save and close the document
-            var saveOptions = new PDFSaveOptions();
-            var saveFile = new File(outputFolder + "/" + backFile.name.replace(".pdf", "_QR.pdf"));
-            doc.saveAs(saveFile, saveOptions);
-            doc.close();
-
-            processedCount++;
+                processedCount++;
+            } catch (processError) {
+                errorCount++;
+                $.writeln("Error processing " + backFile.name + ": " + processError.message);
+                if (doc) doc.close();
+            }
         } else {
             errorCount++;
-            alert("No matching QR code found for: " + backFile.name + "\nNormalized name: " + normalizedBackName);
+            $.writeln("No matching QR code found for: " + backFile.name);
         }
     }
 
@@ -99,15 +124,17 @@ try {
         "----------------------------------------\n\n" +
         "✦ Total back designs processed: " + backFiles.length + "\n" +
         "✦ Successfully overlaid QR codes: " + processedCount + "\n" +
-        "✦ Errors (no matching QR code): " + errorCount + "\n\n" +
-        "New PDFs with overlaid QR codes have been saved in the selected output folder.\n" +
-        "These files are now ready for final review and printing.\n\n" +
+        "✦ Errors encountered: " + errorCount + "\n\n" +
+        "New PDFs with centered QR codes have been saved\n" +
+        "in the selected output folder.\n\n" +
         "Next steps:\n" +
-        "1. Review the generated PDFs to ensure QR codes are correctly positioned.\n" +
+        "1. Review the generated PDFs to verify QR code positioning.\n" +
         "2. Proceed with printing or digital distribution as needed.\n\n" +
-        "Thank you for using the QR Code Overlay Script for Player Card Backs!"
+        "Thank you for using the QR Code Overlay Script!"
     );
 
 } catch (e) {
-    alert("An error occurred: " + e.message + "\nPlease check your file names and folder structure, then try again.");
+    alert("An error occurred: " + e.message + "\nPlease check the JavaScript console for details.");
+    $.writeln("Error details: " + e.message);
+    if (e.line) $.writeln("Line: " + e.line);
 }
