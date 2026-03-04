@@ -110,7 +110,9 @@ def main():
 
     # Prompt for paths
     input_dir = sanitize_path(input("Enter the path to the directory containing PNG backgrounds: "))
-    output_dir = sanitize_path(input("Enter the path to the output directory for PDFs: "))
+    output_dir_input = input("Enter the path to the output directory for PDFs: ").strip('\'"').replace("\\ ", " ").strip()
+    os.makedirs(output_dir_input, exist_ok=True)
+    output_dir = output_dir_input
     blank_pdf_path = sanitize_path(input("Enter the path to the blank PDF file: "))
 
     # Run the conversion
@@ -176,7 +178,9 @@ def png_to_pdf(input_dir, output_dir, blank_pdf_path):
 
 # Prompt for paths
 input_dir = sanitize_path(input("Enter the path to the directory containing PNG backgrounds: "))
-output_dir = sanitize_path(input("Enter the path to the output directory for PDFs: "))
+output_dir_input = input("Enter the path to the output directory for PDFs: ").strip('\'"').replace("\\ ", " ").strip()
+os.makedirs(output_dir_input, exist_ok=True)
+output_dir = output_dir_input
 blank_pdf_path = sanitize_path(input("Enter the path to the blank PDF file: "))
 
 # Run the conversion
@@ -237,7 +241,9 @@ png_to_pdf(input_dir, output_dir, blank_pdf_path)
 
 # # Prompt for paths
 # input_dir = sanitize_path(input("Enter the path to the directory containing PNG backgrounds: "))
-# output_dir = sanitize_path(input("Enter the path to the output directory for PDFs: "))
+# output_dir_input = input("Enter the path to the output directory for PDFs: ").strip('\'"').replace("\\ ", " ").strip()
+# os.makedirs(output_dir_input, exist_ok=True)
+# output_dir = output_dir_input
 # blank_pdf_path = sanitize_path(input("Enter the path to the blank PDF file: "))
 
 # # Run the conversion

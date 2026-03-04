@@ -157,6 +157,8 @@ def rename_new_files(directory):
     )
     pattern5 = re.compile(r'(.+?)[-_](\d+)[-_](Bronze|Silver|Galaxy|Dragon Purple|Dragon Red|Universe Nebula|Space)[-_](.+?)[-_](\d+)\.pdf', re.IGNORECASE)
     pattern6 = re.compile(r'(Bronze|Silver) v2 - ([A-Za-z ]+)_(.+?)-(\d+)-with-text-layer_(\d+)\.pdf')
+    # Pattern 7: bg-<background>_<PlayerName>-<OptionalNumber>-with-text-layer_<serial>.pdf
+    pattern7 = re.compile(r'bg-(.+?)_(.+?)-with-text-layer_(\d+)\.pdf')
 
     player_sequence = defaultdict(lambda: 1)
     serial_ids = defaultdict(int)
@@ -180,6 +182,7 @@ def rename_new_files(directory):
         match4 = pattern4.match(filename)
         match5 = pattern5.match(filename)
         match6 = pattern6.match(filename)
+        match7 = pattern7.match(filename)
 
         if match1:
             edition, theme, name, player_number, serial_number = match1.groups()
@@ -208,6 +211,19 @@ def rename_new_files(directory):
         elif match6:
             edition, theme, name, player_number, serial_number = match6.groups()
             new_filename = f"{format_player_name(name)}-{player_number}-{edition}-{theme}-{player_sequence[name]:02d}.pdf"
+            player_sequence[name] += 1
+        elif match7:
+            background, player_info, serial_number = match7.groups()
+            # player_info is like "Axel-Islas-5" or "Cameron-Joyner" (no number)
+            # Try to split off a trailing jersey number
+            number_match = re.match(r'(.+?)-(\d+)$', player_info)
+            if number_match:
+                name = number_match.group(1)
+                player_number = number_match.group(2)
+                new_filename = f"{format_player_name(name)}-{player_number}-{background}-{player_sequence[name]:02d}.pdf"
+            else:
+                name = player_info
+                new_filename = f"{format_player_name(name)}-{background}-{player_sequence[name]:02d}.pdf"
             player_sequence[name] += 1
         else:
             print(f"Skipping file with unrecognized pattern: {filename}")
