@@ -118,3 +118,5 @@ venv/
 *.pyc
 __pycache__/
 scripts/python/venv/
+# Auto-generated codebase digest
+codebase.md

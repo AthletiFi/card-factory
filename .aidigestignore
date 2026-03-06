@@ -1,0 +1,43 @@
+# Ignore large binary design assets
+assets/backgrounds/**
+assets/borders/**
+assets/templates/**
+assets/fonts/**
+
+# Ignore Adobe action files
+assets/actions/**
+
+# Ignore exported image assets
+assets/**/*.png
+assets/**/*.pdf
+
+# Ignore generated QR codes
+scripts/node/batch-qr-code-generator/qr_codes/**
+
+# Ignore node lockfile (not useful for AI understanding)
+scripts/node/batch-qr-code-generator/package-lock.json
+
+# Ignore font binaries
+*.otf
+*.ttf
+
+# Ignore Adobe binaries
+*.ai
+*.aia
+*.atn
+
+# Ignore generated images
+*.png
+*.jpg
+*.jpeg
+*.webp
+*.svg
+*.pdf
+*.sql
+*.json
+
+'original instructions for our card generation process.txt'
+
+docs/**
+
+tree.txt

@@ -25,30 +25,35 @@ function showIntro() {
 // Function to combine border with background
 function combineBorderWithBackground(backgroundFile, borderFile, outputFolder, xOffset, yOffset) {
     var backgroundDoc = app.open(backgroundFile);
-    
+
+    // Get artboard bounds [left, top, right, bottom]
+    var artRect = backgroundDoc.artboards[0].artboardRect;
+    var artWidth = artRect[2] - artRect[0];
+    var artHeight = artRect[1] - artRect[3];
+
     // Place the border file
     var borderItem = backgroundDoc.placedItems.add();
     borderItem.file = borderFile;
-    
-    // Ensure the border covers the entire artboard
-    borderItem.width = backgroundDoc.width;
-    borderItem.height = backgroundDoc.height;
-    
-    // Move the border to the correct position
-    borderItem.transform(app.getTranslationMatrix(xOffset, -yOffset));
-    
+
+    // Size border to artboard dimensions
+    borderItem.width = artWidth;
+    borderItem.height = artHeight;
+
+    // Position border at artboard origin (top-left), applying any offset
+    borderItem.position = [artRect[0] + xOffset, artRect[1] - yOffset];
+
     // Move border to top layer
     borderItem.move(backgroundDoc, ElementPlacement.PLACEATBEGINNING);
-    
+
     // Save as PDF
     var outputFile = new File(outputFolder + "/" + backgroundFile.name);
     var saveOptions = new PDFSaveOptions();
     saveOptions.compatibility = PDFCompatibility.ACROBAT5;
     saveOptions.generateThumbnails = true;
     saveOptions.preserveEditability = true;
-    
+
     backgroundDoc.saveAs(outputFile, saveOptions);
-    
+
     // Close the document
     backgroundDoc.close(SaveOptions.DONOTSAVECHANGES);
 }
@@ -57,11 +62,11 @@ function combineBorderWithBackground(backgroundFile, borderFile, outputFolder, x
 function performDummyOperation(borderFile) {
     // Create a new document
     var dummyDoc = app.documents.add();
-    
+
     // Place the border file
     var borderItem = dummyDoc.placedItems.add();
     borderItem.file = borderFile;
-    
+
     // Close the document without saving
     dummyDoc.close(SaveOptions.DONOTSAVECHANGES);
 }
@@ -80,33 +85,38 @@ function promptForOffset() {
 // Function to check if offset is correct
 function checkOffset(backgroundFile, borderFile, xOffset, yOffset) {
     var testDoc = app.open(backgroundFile);
-    
+
+    // Get artboard bounds [left, top, right, bottom]
+    var artRect = testDoc.artboards[0].artboardRect;
+    var artWidth = artRect[2] - artRect[0];
+    var artHeight = artRect[1] - artRect[3];
+
     // Place the border file
     var borderItem = testDoc.placedItems.add();
     borderItem.file = borderFile;
-    
-    // Ensure the border covers the entire artboard
-    borderItem.width = testDoc.width;
-    borderItem.height = testDoc.height;
-    
-    // Move the border to the correct position
-    borderItem.transform(app.getTranslationMatrix(xOffset, -yOffset));
-    
+
+    // Size border to artboard dimensions
+    borderItem.width = artWidth;
+    borderItem.height = artHeight;
+
+    // Position border at artboard origin (top-left), applying any offset
+    borderItem.position = [artRect[0] + xOffset, artRect[1] - yOffset];
+
     // Move border to top layer
     borderItem.move(testDoc, ElementPlacement.PLACEATBEGINNING);
-    
+
     // Fit artboard to window
     app.executeMenuCommand('fitall');
-    
+
     // Redraw the screen to ensure the changes are visible
     app.redraw();
-    
+
     // Prompt user to check offset
     var isOffsetCorrect = confirm("Please check if the border is correctly positioned.\nClick Yes if it's good, or No to adjust.");
-    
+
     // Close the document without saving
     testDoc.close(SaveOptions.DONOTSAVECHANGES);
-    
+
     return isOffsetCorrect;
 }
 
@@ -119,31 +129,31 @@ function main() {
     var backgroundFolder = Folder.selectDialog("Select folder with player card PDFs");
     var borderFile = File.openDialog("Select border PDF file");
     var outputFolder = Folder.selectDialog("Select output folder for combined PDFs");
-    
+
     if (backgroundFolder != null && borderFile != null && outputFolder != null) {
         // Perform dummy operation to initialize Illustrator
         performDummyOperation(borderFile);
-        
+
         var offset;
         var isOffsetCorrect = false;
         var backgroundFiles = backgroundFolder.getFiles("*.pdf");
-        
+
         if (backgroundFiles.length === 0) {
             alert("No PDF files found in the selected folder.");
             return;
         }
-        
+
         do {
             offset = promptForOffset();
-            
+
             // Check offset with the first file
             isOffsetCorrect = checkOffset(backgroundFiles[0], borderFile, offset.x, offset.y);
-            
+
             if (!isOffsetCorrect) {
                 alert("Border position not correct. Please try again with different offset values.");
             }
         } while (!isOffsetCorrect);
-        
+
         // Process all PDF files in the background folder
         var processedCount = 0;
         var errorCount = 0;
@@ -157,7 +167,7 @@ function main() {
             }
             $.sleep(100); // Short pause between operations
         }
-        
+
         alert(
             "----------------------------------------\n" +
             "Border Addition Complete\n" +
